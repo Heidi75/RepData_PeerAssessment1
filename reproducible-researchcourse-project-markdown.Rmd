@@ -1,0 +1,148 @@
+---
+title: "Reproducible Research Course Project 1"
+author: "Heidi Peterson"
+date: "10/7/2019"
+output: html_document
+---
+
+variables included in this dataset are:
+
+steps: Number of steps taking in a 5-minute interval (missing values are coded as NA)
+date: The date on which the measurement was taken in YYYY-MM-DD format
+interval: Identifier for the 5-minute interval in which measurement was taken
+
+Download & unzip dataset 
+read dataset Process/transform the data 
+(if necessary) into a format suitable for your analysis
+
+```{r}
+library(ggplot2)
+library(lubridate)
+
+temp <- tempfile()
+download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip",temp)
+unzip(temp)
+```
+
+read dataset Process/transform the data 
+(if necessary) into a format suitable for your analysis
+
+```{r}
+
+activityRR<- read.csv("activity.csv")
+summary(activityRR)
+activityRR$date<-ymd(activityRR$date)
+summary(activityRR)
+head(activityRR)
+```
+
+Histogram of the total number of steps taken each day
+
+```{r}
+stepseachDay <- tapply(activityRR$steps, activityRR$date, sum, na.rm=TRUE)
+
+qplot(stepseachDay,
+      geom="histogram",
+      main = "Histogram of the total number of steps taken each day", 
+      xlab = "Steps",  
+      fill=I("blue"), 
+      col=I("red"), 
+      alpha=I(.2))
+
+
+hist(stepseachDay,col = "blue", main="Histogram of the total number of steps taken each day", xlab= "steps each day")
+```
+
+Mean and median number of steps taken each day
+
+```{r}
+summary(stepseachDay)
+mean<-mean(stepseachDay)
+median(stepseachDay)
+```
+
+Time series plot of the average number of steps taken had to make a new matrix as the old one was not labled columns
+
+```{r}
+totalstepsperday <- aggregate(steps ~ date, data = activityRR, FUN = sum, na.rm = TRUE)
+head(totalstepsperday)
+summary(totalstepsperday)
+
+ggplot(totalstepsperday, aes(date, steps)) + geom_line() +
+  xlab("") + ylab("Daily Steps")
+```
+
+The 5-minute interval that, on average, contains the maximum number of steps
+The origional dataframe has 5 the steps measured in 5 minutes intervals per day.
+
+```{r}
+
+ggplot(activityRR, aes(x = interval , y = steps))+
+  geom_line(color="blue", size=1) + 
+  labs(title = "steps per 5 minute intervals", x = "5 min Interval", y = " Steps")
+
+summary(activityRR)
+
+```
+We find out what the maximum amount of steps is by the function below which confirms with the summary chart above.
+
+```{r}
+max_step<- max(activityRR$steps, na.rm=T)
+max_step
+```
+
+Then we place this in the datafram to find out which 5 minute interval contains that maximum number of steps and we find
+```{r}
+activityRR[max_step, ]$interval
+```
+
+Code to describe and show a strategy for imputing missing data
+replacing missing values with the mean
+
+```{r}
+activityRR$steps[is.na(activityRR$steps)]<-mean(activityRR$steps, na.rm=TRUE)
+
+```
+Histogram of the total number of steps taken each day after missing values are imputed
+
+```{r}
+stepseachDay <- tapply(activityRR$steps, activityRR$date, sum, na.rm=TRUE)
+
+qplot(stepseachDay,
+      geom="histogram",
+      main = "Histogram of the total number of steps taken each day", 
+      xlab = "Steps",  
+      fill=I("blue"), 
+      col=I("red"), 
+      alpha=I(.2))
+
+
+hist(stepseachDay,col = "blue", main="Histogram of the total number of steps taken each day", xlab= "steps each day")
+```
+
+Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
+
+find the days by the date
+```{r}
+activityRR$days<-weekdays(as.Date(activityRR$date))
+
+```
+Make a new column decerning between weekdays and weekends
+
+```{r}
+activityRR$wDay  <- ifelse(weekdays(activityRR$date) %in% c("Saturday", "Sunday"), "weekend", "weekday")
+
+```
+Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
+
+```{r}
+ggplot(activityRR , aes(x = interval , y = steps)) +
+  geom_line() +
+  labs(title = "Steps by intervals", x = "interval", y = "steps") +
+  facet_wrap(~wDay , ncol = 1, nrow=2)
+
+```
+All of the R code needed to reproduce the results (numbers, plots, etc.) in the report is above
+
+
+
