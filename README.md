@@ -1,3 +1,7 @@
+This is the link to the HTML file online which you can see the graphs, in the code it gives the HTML but you cannot see the graphs.
+
+rpubs.com/Heidi75/536764
+
 ## Introduction
 
 It is now possible to collect a large amount of data about personal
